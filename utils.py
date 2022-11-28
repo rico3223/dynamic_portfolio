@@ -14,6 +14,3 @@ def load_csv(tickers: list, start:str, end:str):
     csv = csv[1:].copy()
 
     return csv
-
-
-load_csv(['AAPL'], start='2000-01-01', end='2000-01-10')
