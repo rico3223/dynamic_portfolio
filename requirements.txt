@@ -30,7 +30,7 @@ jupyterlab-pygments==0.2.2
 jupyterlab-widgets==1.1.1
 jupyterlab_server==2.16.1
 
-#other packages
+#Other packages
 yfinance
 
 # Trick to install the version of Tensorflow depending on your processor: darwin == Mac, ARM == M1
