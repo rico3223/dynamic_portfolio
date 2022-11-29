@@ -95,7 +95,7 @@ class BacktestBase(object):
 
 class BacktestLongOnly(BacktestBase):
 
-    def sma_strategy(self, SMA1, SMA2):
+    def run_sma_strategy(self, SMA1, SMA2):
 
         self.position = 0
         self.trades = 0
@@ -115,16 +115,7 @@ class BacktestLongOnly(BacktestBase):
         self.close_out(bar)
 
 
-        def run_strategy():
 
-            lobt.run_sma_strategy(42, 252)
-        lobt = BacktestLongOnly('SPY', '2010-01-04', '2019-12-31', 10000, verbose = False)
-
-        run_strategy()
-
-        lobt = BacktestLongOnly('SPY', '2010-01-04', '2019-12-31', 10000, 10.0, 0.01, False)
-
-        run_strategy()
 
 
 if __name__ == '__main__':
@@ -134,4 +125,13 @@ if __name__ == '__main__':
     print(bb.data.tail())
     bb.plot_data()
 
-    BacktestLongOnly.run_strategy()
+    def run_strategy():
+
+        lobt.run_sma_strategy(42, 252)
+    lobt = BacktestLongOnly('SPY', '2010-01-04', '2019-12-31', 10000, verbose = False)
+
+    run_strategy()
+
+    lobt = BacktestLongOnly('SPY', '2010-01-04', '2019-12-31', 10000, 10.0, 0.01, False)
+
+    run_strategy()
