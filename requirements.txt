@@ -1,9 +1,3 @@
-pandas
-numpy
-yfinance
-
-#scikit
-xgregressor
 #Useful packages
 pandas
 numpy
