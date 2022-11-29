@@ -2,8 +2,7 @@
 import numpy as np
 import pandas as pd
 import yfinance as yf
-gold = yf.download('GC=F', start='2000-01-01', end='2022-11-23')
-us_dollar = yf.download('DX-Y.NYB',start='2000-01-01', end='2022-11-23')
+
 
 
 def load_csv(ticker: str, start: str, end: str):
@@ -24,8 +23,8 @@ def load_csv(ticker: str, start: str, end: str):
         ticker.reset_index(inplace=True, drop=True)
 
 
-    gold = gold
-    us_dollar = us_dollar
+    gold = gold #in raw_data/macro
+    us_dollar = us_dollar #in raw_data/macro
 
     credit_spread = pd.read_csv('../raw_data/us_yields.csv', index_col=0)
     oil = pd.read_csv('../raw_data/oil_return.csv', index_col=0)
