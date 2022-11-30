@@ -89,6 +89,11 @@ def load_csv(ticker: str):
     final_df.dropna(inplace=True)
     final_df.reset_index(drop=True, inplace=True)
 
+    # calculating the return
+    final_df['return'] = final_df['adjusted_close'].pct_change()
+    final_df['return'][0]='0'
+
+
     return final_df
 
 def return_tickers():
