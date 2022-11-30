@@ -127,17 +127,18 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
 
     if distance==True:
         for day in days:
-            final_df[f'distance_{day}days'] = (final_df['return'] - final_df['return'].rolling(day).mean().shift(1))
+            final_df[f'distance_{day}days'] = (final_df['return'] - final_df['return'].rolling(day).mean()).shift(1)
 
     if volume==True:
         for day in days:
-            final_df[f'volume_{day}days'] = final_df['volume'].rolling(day).mean().shift(1)
+            final_df[f'volume_{day}days'] = (final_df['volume'].rolling(day).mean()/final_df['volume']).shift(1)
 
     if price_eps_ratio==True:
         final_df['price/eps'] = final_df['adjusted_close']/final_df['reportedEPS']
 
     if momentum_eps_ratio==True:
-        final_df['momentum/eps'] = final_df['momentum']/final_df['reportedEPS']
+        for day in days:
+            final_df[f'momentum_{day}days/eps']=final_df[f'momentum_{day}days']/final_df['reportedEPS']
 
     if gold_return==True:
         final_df['gold_return'] = final_df['gold_price'].pct_change()
