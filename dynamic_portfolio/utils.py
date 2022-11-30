@@ -91,7 +91,6 @@ def load_csv(ticker: str):
 
     return final_df
 
-
 def return_tickers():
     """
     Function to return in list of all S&P500 tickers
