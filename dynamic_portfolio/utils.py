@@ -15,14 +15,14 @@ def load_csv(ticker: str):
     #Loading all relevant csv files
 
     #Loading stock return
-    ticker = pd.read_csv(f'../raw_data/stocks_return/adj_return_{ticker}.csv')
-    ticker.rename(columns={'timestamp':'date'}, inplace=True)
-    ticker.sort_values('date', ascending=True, inplace=True)
-    ticker.reset_index(inplace=True, drop=True)
+    ticker_df = pd.read_csv(f'../raw_data/stocks_return/adj_return_{ticker}.csv')
+    ticker_df.rename(columns={'timestamp':'date'}, inplace=True)
+    ticker_df.sort_values('date', ascending=True, inplace=True)
+    ticker_df.reset_index(inplace=True, drop=True)
 
-    if '1999-12-31' in ticker['date'].values:
-        ticker = ticker[ticker['date']>'1999-12-31']
-        ticker.reset_index(inplace=True, drop=True)
+    if '1999-12-31' in ticker_df['date'].values:
+        ticker_df = ticker_df[ticker_df['date']>'1999-12-31']
+        ticker_df.reset_index(inplace=True, drop=True)
 
     #Loading stocks eps
     ticker_eps = pd.read_csv(f'../raw_data/eps/data_{ticker}.csv', index_col=0)
@@ -54,7 +54,7 @@ def load_csv(ticker: str):
 
 
     #Creating our final df and merging with relevant files
-    final_df = ticker.copy()
+    final_df = ticker_df.copy()
     final_df = final_df.merge(ticker_eps, how='outer', on='date')
     final_df = final_df.merge(credit_spread, how='outer')
     final_df = final_df.merge(oil, how='outer', on='date')
