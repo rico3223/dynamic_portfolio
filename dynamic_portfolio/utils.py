@@ -105,7 +105,7 @@ def load_csv(ticker: str):
 
 def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool = True, momentum: bool = True, distance: bool = True, volume: bool = True, price_eps_ratio: bool = True,
                       momentum_eps_ratio: bool = True, gold_return: bool = True, oil_return: bool = True, usd_return: bool = True, cpi_return: bool = True, period:int = 250,
-                      gdp_return: bool = True, days:list = [5, 10, 20] ):
+                      gdp_return: bool = True, ten_year_return: bool = True, two_year_return: bool = True, spread_return: bool = True, days:list = [5, 10, 20] ):
     """
     Function that adds features to a dataframe
     days should be a list containing the number of days to consider for calculating the volatitliy, momentum, distance and and custom volume
@@ -142,6 +142,15 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     if gold_return==True:
         final_df['gold_return'] = final_df['gold_price'].pct_change()
 
+    if ten_year_return==True:
+        final_df['10Y_return'] = final_df['10Y_yield'].pct_change()
+
+    if two_year_return==True:
+        final_df['2Y_return'] = final_df['2Y_yield'].pct_change()
+
+    if spread_return==True:
+        final_df['spread_return'] = final_df['10_2_spread'].pct_change()
+
     if oil_return==True:
         final_df['oil_return'] = final_df['oil_price'].pct_change()
 
@@ -154,6 +163,7 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     if gdp_return==True:
         final_df['gdp_return'] = final_df['gdp_per_capita'].pct_change(periods=period)
 
+    final_df.drop(columns=['high', 'low', 'close', 'adjusted_close'], inplace=True)
     final_df.dropna(inplace=True)
     final_df.reset_index(drop=True, inplace=True)
 
