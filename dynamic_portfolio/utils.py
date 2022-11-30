@@ -38,7 +38,7 @@ def load_csv(ticker: str):
     ticker_eps.drop(columns=['year','fiscalDateEnding', 'estimatedEPS', 'surprise', 'reportedDate'], inplace=True)
 
     #Loading all macros and commodities
-    gold = pd.read_csv('../raw_data/macro/gold.csv', index_col=0)
+    gold = pd.read_csv('../raw_data/macro/gold.csv', index_col=0, decimal=',')
     us_dollar = pd.read_csv('../raw_data/macro/usd.csv', index_col=0)
 
     credit_spread = pd.read_csv('../raw_data/macro/us_yields.csv', index_col=0)
@@ -85,13 +85,16 @@ def load_csv(ticker: str):
     final_df['surprisePercentage'] = final_df['surprisePercentage'].replace(['None'], '0')
     final_df['surprisePercentage'] = final_df['surprisePercentage'].replace([np.nan], '0')
 
+    #Changing the dtypes of relevant features such as surprisePercentage and gold_price
+    final_df["surprisePercentage"] = pd.to_numeric(final_df["surprisePercentage"])
+
     #Dropping null values
     final_df.dropna(inplace=True)
     final_df.reset_index(drop=True, inplace=True)
 
     # calculating the return
     final_df['return'] = final_df['adjusted_close'].pct_change()
-    final_df['return'][0]='0'
+    final_df['return'][0]=0
 
 
     return final_df
