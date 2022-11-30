@@ -88,6 +88,10 @@ def load_csv(ticker: str):
     #Changing the dtypes of relevant features such as surprisePercentage and gold_price
     final_df["surprisePercentage"] = pd.to_numeric(final_df["surprisePercentage"])
 
+    # Chaging the unemployement rate to decimal
+    final_df['unemployment_rate'] = final_df['unemployment_rate']/100
+    final_df['surprisePercentage'] = final_df['surprisePercentage']/100
+
     #Dropping null values
     final_df.dropna(inplace=True)
     final_df.reset_index(drop=True, inplace=True)
@@ -96,6 +100,72 @@ def load_csv(ticker: str):
     final_df['return'] = final_df['adjusted_close'].pct_change()
     final_df['return'][0]=0
 
+
+    return final_df
+
+def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool = True, momentum: bool = True, distance: bool = True, volume: bool = True, price_eps_ratio: bool = True,
+                      momentum_eps_ratio: bool = True, gold_return: bool = True, oil_return: bool = True, usd_return: bool = True, cpi_return: bool = True, period:int = 250,
+                      gdp_return: bool = True, ten_year_return: bool = True, two_year_return: bool = True, spread_return: bool = True, days:list = [5, 10, 20] ):
+    """
+    Function that adds features to a dataframe
+    days should be a list containing the number of days to consider for calculating the volatitliy, momentum, distance and and custom volume
+    in order to calculate the momentum/eps ratio, momentum should be True
+    """
+
+    final_df = load_csv(ticker=ticker)
+
+    if high_low_ratio==True:
+        final_df['high/low'] = final_df['high']/final_df['low'] - 1 # max variation in %
+
+    if volatility==True:
+        for day in days:
+            final_df[f'volatility_{day}days'] = final_df['return'].rolling(day).std().shift(1)
+
+    if momentum==True:
+        for day in days:
+            final_df[f'momentum_{day}days'] = final_df['return'].rolling(day).mean().shift(1)
+
+    if distance==True:
+        for day in days:
+            final_df[f'distance_{day}days'] = (final_df['return'] - final_df['return'].rolling(day).mean().shift(1))
+
+    if volume==True:
+        for day in days:
+            final_df[f'volume_{day}days'] = final_df['volume'].rolling(day).mean().shift(1)
+
+    if price_eps_ratio==True:
+        final_df['price/eps'] = final_df['adjusted_close']/final_df['reportedEPS']
+
+    if momentum_eps_ratio==True:
+        final_df['momentum/eps'] = final_df['momentum']/final_df['reportedEPS']
+
+    if gold_return==True:
+        final_df['gold_return'] = final_df['gold_price'].pct_change()
+
+    if ten_year_return==True:
+        final_df['10Y_return'] = final_df['10Y_yield'].pct_change()
+
+    if two_year_return==True:
+        final_df['2Y_return'] = final_df['2Y_yield'].pct_change()
+
+    if spread_return==True:
+        final_df['spread_return'] = final_df['10_2_spread'].pct_change()
+
+    if oil_return==True:
+        final_df['oil_return'] = final_df['oil_price'].pct_change()
+
+    if usd_return==True:
+        final_df['usd_return'] = final_df['usd_price'].pct_change()
+
+    if cpi_return==True:
+        final_df['cpi_return'] = final_df['CPI'].pct_change(periods=30)
+
+    if gdp_return==True:
+        final_df['gdp_return'] = final_df['gdp_per_capita'].pct_change(periods=period)
+
+    final_df.drop(columns=['high', 'low', 'close', 'adjusted_close'], inplace=True)
+    final_df.dropna(inplace=True)
+    final_df.reset_index(drop=True, inplace=True)
 
     return final_df
 
