@@ -149,7 +149,7 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
         final_df['usd_return'] = final_df['usd_price'].pct_change()
 
     if cpi_return==True:
-        final_df['cpi_return'] = final_df['CPI'].pct_change(periods=period)
+        final_df['cpi_return'] = final_df['CPI'].pct_change(periods=30)
 
     if gdp_return==True:
         final_df['gdp_return'] = final_df['gdp_per_capita'].pct_change(periods=period)
