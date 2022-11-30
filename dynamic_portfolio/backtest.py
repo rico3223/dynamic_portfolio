@@ -86,12 +86,21 @@ class BacktestBase(object):
         if self.verbose:
             print(f'{date} | inventory {self.units} units at {price:.2f}')
             print('=' * 55)
-        print('Final balance [$] {:.2f}'.format(self.amount))
+        tax_rate = 0.3
+        net_profit = self.amount * (1-tax_rate)
         perf = ((self.amount - self.initial_amount) / self.initial_amount * 100)
-        print('Net Performance [%] {:.2f}'.format(perf))
+        net_perf = ((net_profit - self.initial_amount) / self.initial_amount * 100)
+        sharpe_ratio = ((np.sum(self.data['return']).mean()) - 0.03)/(np.sum(self.data['return'][0]).std())
+        #substract 10y yield for sharpe ratio, 0.03 for instance
+        ann_sharpe = sharpe_ratio * 252 ** 0.5
+        print('Final Balance (gross) [$] {:.2f}'.format(self.amount))
+        print('Final Balance (net) [$] {:.2f}'.format(net_profit))
+        print('Gross Performance [%] {:.2f}'.format(perf))
+        print('Net Performance [%] {:.2f}'.format(net_perf))
         print('Trades Executed [#] {:.2f}'.format(self.trades))
         print('=' * 55)
-
+        print('Sharpe Ratio {:.2f}'.format(sharpe_ratio))
+        print('Annualized Sharpe Ratio {:.2f}'.format(ann_sharpe))
 
 class BacktestLongOnly(BacktestBase):
 
@@ -115,7 +124,53 @@ class BacktestLongOnly(BacktestBase):
         self.close_out(bar)
 
 
+class BacktestLongShort(BacktestBase):
 
+    def go_long(self, bar, units=None, amount=None):
+
+        if self.position == -1:
+            self.place_buy_order(bar, units= -self.units)
+        if units:
+            self.place_buy_order(bar, units=units)
+        elif amount:
+            if amount == 'all':
+                amount = self.amount
+            self.place_buy_order(bar, amount=amount)
+
+    def go_short(self, bar, units=None, amount=None):
+
+        if self.position == 1:
+            self.place_sell_order(bar, units= self.units)
+        if units:
+            self.place_sell_order(bar, units=units)
+        elif amount:
+            if amount == 'all':
+                amount = self.amount
+            self.place_sell_order(bar, amount=amount)
+
+    def run_sma_strategy(self, SMA1, SMA2):
+
+        msg = f'\n\nRunning SMA strategy | SMA1={SMA1} & SMA2={SMA2}'
+        msg += f'\nFixed costs {self.ftc}'
+        msg += f'\nProportional costs {self.ptc}'
+        print(msg)
+        print('=' *  55)
+        self.position = 0
+        self.trades = 0
+        self.amount = self.initial_amount
+        self.data['SMA1'] = self.data['price'].rolling(SMA1).mean()
+        self.data['SMA2'] = self.data['price'].rolling(SMA2).mean()
+
+        for bar in range(SMA2, len(self.data)):
+            if self.position in [0, -1]:
+                if self.data['SMA1'].iloc[bar] > self.data['SMA2'].iloc[bar]:
+                    self.go_long(bar, amount = 'all')
+                    self.position = 1
+            if self.position in [0, 1]:
+                if self.data['SMA1'].iloc[bar] < self.data['SMA2'].iloc[bar]:
+                    self.go_short(bar, amount='all')
+                    self.position = -1
+        self.close_out(bar)
 
 
 if __name__ == '__main__':
@@ -127,11 +182,11 @@ if __name__ == '__main__':
 
     def run_strategy():
 
-        lobt.run_sma_strategy(42, 252)
-    lobt = BacktestLongOnly('SPY', '2010-01-04', '2019-12-31', 10000, verbose = False)
+        lobt.run_sma_strategy(20, 100)
+    # lobt = BacktestLongShort('SPY', '2010-01-04', '2019-12-31', 10000, verbose = False)
 
-    run_strategy()
+    # run_strategy()
 
-    lobt = BacktestLongOnly('SPY', '2010-01-04', '2019-12-31', 10000, 10.0, 0.01, False)
+    lobt = BacktestLongShort('SPY', '2010-01-04', '2019-12-31', 10000, 10.0, 0.01, False)
 
     run_strategy()
