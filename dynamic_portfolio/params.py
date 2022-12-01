@@ -8,5 +8,5 @@ cross_val = dict(
     horizon : 1, # Gap = horizon - 1
     output_length : 1, # Number of targets wanted
     stride : 1, #
-    TARGET : ['pred_return'], #
+    TARGET : ['return'], #
 )

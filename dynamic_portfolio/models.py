@@ -19,63 +19,63 @@ def model_sgdr():
     model_lin_reg_sgd.score(X_test, y_test)
 
 def model_huberr():
-    model_huberr = HuberRegressor().fit(X, y)
+    model_huberr = HuberRegressor().fit(X_train, y_train)
     model_huberr.score(X_test, y_test)
 
 def model_lars():
-    model_lars = Lars().fit(X, y)
+    model_lars = Lars().fit(X_train, y_train)
     model_lars.score(X_test, y_test)
 
 def model_lasso():
-    model_lasso = Lasso().fit(X, y)
+    model_lasso = Lasso().fit(X_train, y_train)
     model_lasso.score(X_test, y_test)
 
 def model_ransacr():
-    model_ransacr = RANSACRegressor().fit(X, y)
+    model_ransacr = RANSACRegressor().fit(X_train, y_train)
     model_ransacr.score(X_test, y_test)
 
 def model_ridge():
-    model_ridge = Ridge().fit(X, y)
+    model_ridge = Ridge().fit(X_train, y_train)
     model_ridge.score(X_test, y_test)
 
 def model_theilsenr():
-    model_theilsenr = TheilSenRegressor().fit(X, y)
+    model_theilsenr = TheilSenRegressor().fit(X_train, y_train)
     model_theilsenr.score(X_test, y_test)
 
 def model_svr():
-    model_svr = SVR().fit(X, y)
+    model_svr = SVR().fit(X_train, y_train)
     model_svr.score(X_test, y_test)
 
 def model_elasticnet():
-    model_elasticnet = ElasticNet().fit(X, y)
+    model_elasticnet = ElasticNet().fit(X_train, y_train)
     model_elasticnet.score(X_test, y_test)
 
 def model_forestreg():
-    model_forestreg = RandomForestRegressor().fit(X, y)
+    model_forestreg = RandomForestRegressor().fit(X_train, y_train)
     model_forestreg.score(X_test, y_test)
 
 def model_baggingr():
-    model_baggingr = BaggingRegressor().fit(X, y)
+    model_baggingr = BaggingRegressor().fit(X_train, y_train)
     model_baggingr.score(X_test, y_test)
 
 def model_daboostr():
-    model_daboostr = daBoostRegressor().fit(X, y)
+    model_daboostr = AdaBoostRegressor().fit(X_train, y_train)
     model_daboostr.score(X_test, y_test)
 
 def model_gradboostr():
-    model_gradboostr = GradientBoostingRegressor().fit(X, y)
+    model_gradboostr = GradientBoostingRegressor().fit(X_train, y_train)
     model_gradboostr.score(X_test, y_test)
 
 def model_XGBR():
-    model_XGBR = XGBRegressor().fit(X, y)
+    model_XGBR = XGBRegressor().fit(X_train, y_train)
     model_XGBR.score(X_test, y_test)
 
 
 def model_Votingr():
-    model_Votingr = VotingRegressor().fit(X, y)
+    model_Votingr = VotingRegressor().fit(X_train, y_train)
     model_Votingr.score(X_test, y_test)
 
 
 def model_stackingr():
-    model_stackingr = StackingRegressor().fit(X, y)
+    model_stackingr = StackingRegressor().fit(X_train, y_train)
     model_stackingr.score(X_test, y_test)
