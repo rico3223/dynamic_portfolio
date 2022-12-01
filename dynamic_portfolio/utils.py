@@ -100,12 +100,14 @@ def load_csv(ticker: str):
     final_df['return'] = final_df['adjusted_close'].pct_change()
     final_df['return'][0]=0
 
-
     return final_df
 
+
+# On perd toujours les 252 jours sur cette fonction
 def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool = True, momentum: bool = True, distance: bool = True, volume: bool = True, price_eps_ratio: bool = True,
                       momentum_eps_ratio: bool = True, gold_return: bool = True, oil_return: bool = True, usd_return: bool = True, cpi_return: bool = True, period:int = 250,
-                      gdp_return: bool = True, ten_year_return: bool = True, two_year_return: bool = True, spread_return: bool = True, days:list = [5, 10, 20] ):
+                      gdp_return: bool = True, ten_year_return: bool = True, two_year_return: bool = True, spread_return: bool = True, volume_momentum: bool = True,
+                      non_farm_payroll_return: bool = True, unemployement_return: bool = True, days:list = [5, 10, 20] ):
     """
     Function that adds features to a dataframe
     days should be a list containing the number of days to consider for calculating the volatitliy, momentum, distance and and custom volume
@@ -133,6 +135,10 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
         for day in days:
             final_df[f'volume_{day}days'] = (final_df['volume'].rolling(day).mean()/final_df['volume']).shift(1)
 
+    if volume_momentum==True:
+        for day in days:
+            final_df[f'volume_momentum_{day}days'] = final_df['volume'].rolling(day).mean().shift(1)
+
     if price_eps_ratio==True:
         final_df['price/eps'] = final_df['adjusted_close']/final_df['reportedEPS']
 
@@ -158,8 +164,14 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     if usd_return==True:
         final_df['usd_return'] = final_df['usd_price'].pct_change()
 
+    if unemployement_return==True:
+        final_df['unemployement_return'] = final_df['unemployment_rate'].pct_change()
+
     if cpi_return==True:
         final_df['cpi_return'] = final_df['CPI'].pct_change(periods=30)
+
+    if non_farm_payroll_return==True:
+        final_df['non_farm_payroll_return'] = final_df['non_farm_payroll'].pct_change(periods=30)
 
     if gdp_return==True:
         final_df['gdp_return'] = final_df['gdp_per_capita'].pct_change(periods=period)
