@@ -1,6 +1,7 @@
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 class BacktestBase(object):
 
@@ -171,6 +172,7 @@ class BacktestLongShort(BacktestBase):
                     self.go_short(bar, amount='all')
                     self.position = -1
         self.close_out(bar)
+
 
 
 if __name__ == '__main__':
