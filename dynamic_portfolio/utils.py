@@ -162,6 +162,7 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
         final_df['spread_return'] = final_df['10_2_spread'].pct_change()
         final_df['spread_return'].replace([np.inf, -np.inf], 0, inplace=True)
 
+
     if oil_return==True:
         final_df['oil_return'] = final_df['oil_price'].pct_change()
 
