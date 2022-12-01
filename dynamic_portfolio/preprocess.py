@@ -8,17 +8,23 @@ from dynamic_portfolio.utils import load_csv, features_creation
 
 
 
-def standard_scaler(df: pd.DataFrame):
-    scaler = StandardScaler()
-    columns = df.columns[1:]
+def scaler(df: pd.DataFrame):
 
-    for column in columns:
-        scaled_df = scaler.fit_transform()
+    #Creating a copy of our dataframe to scale
+    df_scaled = df.copy()
 
+    #Selecting relevant columns to scale (we dropped 'return' since its our target and we dropped 'date')
+    columns_to_scale = df_scaled.drop(columns=['return', 'date']).columns
 
-    return scaled_df
+    # Scaling our data based
+    for column in columns_to_scale:
 
+        if df_scaled[column][0]!= df_scaled[column][1]:
+            scaler_standard = StandardScaler()
+            df_scaled[column] = scaler_standard.fit_transform(df_scaled[[column]])
 
+        else:
+            scaler_robust = RobustScaler()
+            df_scaled[column] = scaler_robust.fit_transform(df_scaled[[column]])
 
-def robust_scaler():
-    pass
+    return df_scaled

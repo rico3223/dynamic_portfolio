@@ -96,9 +96,9 @@ def load_csv(ticker: str):
     final_df.dropna(inplace=True)
     final_df.reset_index(drop=True, inplace=True)
 
-    # calculating the return
-    final_df['return'] = final_df['adjusted_close'].pct_change()
-    final_df['return'][0]=0
+    # # calculating the return
+    # final_df['return'] = final_df['adjusted_close'].pct_change()
+    # final_df['return'][0]=0
 
     return final_df
 
@@ -115,6 +115,9 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     """
 
     final_df = load_csv(ticker=ticker)
+
+    final_df['return'] = final_df['adjusted_close'].pct_change()
+    final_df['return'][0]=0
 
     if high_low_ratio==True:
         final_df['high/low'] = final_df['high']/final_df['low'] - 1 # max variation in %
@@ -157,6 +160,7 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
 
     if spread_return==True:
         final_df['spread_return'] = final_df['10_2_spread'].pct_change()
+        final_df['spread_return'].replace([np.inf, -np.inf], 0, inplace=True)
 
     if oil_return==True:
         final_df['oil_return'] = final_df['oil_price'].pct_change()
@@ -176,7 +180,7 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     if gdp_return==True:
         final_df['gdp_return'] = final_df['gdp_per_capita'].pct_change(periods=period)
 
-    final_df.drop(columns=['high', 'low', 'close', 'adjusted_close'], inplace=True)
+    final_df.drop(columns=['high', 'low','open', 'close', 'adjusted_close'], inplace=True)
     final_df.dropna(inplace=True)
     final_df.reset_index(drop=True, inplace=True)
 
