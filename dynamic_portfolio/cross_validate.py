@@ -126,35 +126,61 @@ def get_X_y(fold: pd.DataFrame,
 
 
 #Loop for split on FOLDS
-def cross_validate_model() :
+def cross_validate_dl() :
     '''
     get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
     The goal of this function is to make splits and sequences on each FOLDS.
     Then, apply a model.
     '''
-    folds = get_folds(df, FOLD_LENGTH, FOLD_STRIDE) # 1 - Creating FOLDS
+    folds = get_folds(df, fold_length, fold_stride) # 1 - Creating FOLDS
 
     for fold_id, fold in enumerate(folds):
 
         # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
 
         (fold_train, fold_test) = train_test_split(fold = fold,
-                                                train_test_ratio = TRAIN_TEST_RATIO,
-                                                input_length = INPUT_LENGTH,
-                                                horizon = HORIZON)
+                                                train_test_ratio = train_test_ratio,
+                                                input_length = input_length ,
+                                                horizon = horizon)
 
         # 3 - Scanninng fold_train and fold_test for SEQUENCES
 
         X_train, y_train = get_X_y(fold = fold_train,
-                                horizon = HORIZON,
-                                input_length = INPUT_LENGTH,
-                                output_length = OUTPUT_LENGTH,
-                                stride = STRIDE)
+                                horizon = horizon,
+                                input_length = input_length ,
+                                output_length = output_length,
+                                stride = stride )
 
         X_test, y_test = get_X_y(fold_test,
-                                horizon = HORIZON,
-                                input_length = INPUT_LENGTH,
-                                output_length = OUTPUT_LENGTH,
-                                stride = STRIDE)
+                                horizon = horizon,
+                                input_length = input_length,
+                                output_length = output_length,
+                                stride = stride)
+
+        #Rajouter le modèle
+
+
+def cross_validate_ml() :
+    '''
+    get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
+    The goal of this function is to make splits and sequences on each FOLDS.
+    Then, apply a model.
+    '''
+    folds = get_folds(df, fold_length, fold_stride) # 1 - Creating FOLDS
+
+    for fold_id, fold in enumerate(folds):
+
+        # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
+
+        (fold_train, fold_test) = train_test_split(fold = fold,
+                                                train_test_ratio = train_test_ratio,
+                                                input_length = input_length ,
+                                                horizon = horizon)
+
+        # 3 - Scanninng fold_train and fold_test for SEQUENCES
+
+        X_train, y_train = fold_train.drop(columns='return'), fold_train['return']
+
+        X_test, y_test = fold_test.drop(columns='return'), fold_test['return']
 
         #Rajouter le modèle
