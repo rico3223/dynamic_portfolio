@@ -189,8 +189,8 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
         final_df['gdp_return'] = final_df['gdp_per_capita'].pct_change(periods=period)
 
     final_df.drop(columns=['high', 'low','open', 'close', 'adjusted_close', 'year'], inplace=True)
-    final_df.dropna(inplace=True)
-    final_df.reset_index(drop=True, inplace=True)
+    #final_df.dropna(inplace=True)
+    #final_df.reset_index(drop=True, inplace=True)
 
     return final_df
 
