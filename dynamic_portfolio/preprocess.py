@@ -27,4 +27,6 @@ def scaler(df: pd.DataFrame):
             scaler_robust = RobustScaler()
             df_scaled[column] = scaler_robust.fit_transform(df_scaled[[column]])
 
+    df_scaled.drop(columns='date')
+
     return df_scaled
