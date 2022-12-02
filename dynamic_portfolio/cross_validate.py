@@ -102,7 +102,7 @@ def get_X_y(fold: pd.DataFrame,
     for i in range(0, len(fold), stride):
         ## Extracting a sequence starting at index_i
         Xi, yi = get_Xi_yi(first_index=i,
-                           fold=folds_test,
+                           fold=fold_test,
                            horizon=horizon,
                            input_length=input_length,
                            output_length=output_length)
