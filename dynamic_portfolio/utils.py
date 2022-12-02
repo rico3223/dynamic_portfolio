@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+#importing local librairies
+from dynamic_portfolio.preprocess import scaler
 
 
 def load_csv(ticker: str):
@@ -28,19 +30,20 @@ def load_csv(ticker: str):
     ticker_eps = pd.read_csv(f'../raw_data/eps/data_{ticker}.csv', index_col=0)
     ticker_eps['date'] = ticker_eps['reportedDate'].copy()
     ticker_eps.sort_values('date', inplace=True)
+    ticker_eps.reset_index(drop = True, inplace=True)
     ticker_eps['reportedDate']= pd.to_datetime(ticker_eps['reportedDate'])
     ticker_eps['year'] = pd.DatetimeIndex(ticker_eps['reportedDate']).year
+    first_year = ticker_eps['year'][0]
 
     if 2000 in ticker_eps['year'].values:
         ticker_eps = ticker_eps[ticker_eps['year']>=2000]
         ticker_eps.reset_index(inplace=True, drop=True)
 
-    ticker_eps.drop(columns=['year','fiscalDateEnding', 'estimatedEPS', 'surprise', 'reportedDate'], inplace=True)
+    ticker_eps.drop(columns=['year', 'fiscalDateEnding', 'estimatedEPS', 'surprise', 'reportedDate'], inplace=True)
 
     #Loading all macros and commodities
     gold = pd.read_csv('../raw_data/macro/gold.csv', index_col=0, decimal=',')
     us_dollar = pd.read_csv('../raw_data/macro/usd.csv', index_col=0)
-
     credit_spread = pd.read_csv('../raw_data/macro/us_yields.csv', index_col=0)
     oil = pd.read_csv('../raw_data/macro/oil.csv', index_col=0)
     orders = pd.read_csv('../raw_data/macro/orders.csv', index_col=0)
@@ -69,15 +72,19 @@ def load_csv(ticker: str):
     final_df = final_df.merge(gold, how='outer', on='date')
     final_df = final_df.merge(us_dollar, how='outer', on='date')
 
-    #Sorting by chronological order and resetting index
+
+    #Sorting by chronological order, resetting index and changing the colummn name for the CPI
     final_df = final_df.sort_values('date', ascending=True)
     final_df.reset_index(drop=True, inplace=True)
+    final_df.rename(columns={'CPI':'cpi'}, inplace=True)
+    final_df['date']= pd.to_datetime(final_df['date'])
+    final_df['year'] = pd.DatetimeIndex(final_df['date']).year
 
     #Since not all features have daily data, we forward filled the missing values
     final_df['orders'] = final_df['orders'].fillna(method='ffill')
     final_df['retail_sales'] = final_df['retail_sales'].fillna(method='ffill')
     final_df['gdp_per_capita'] = final_df['gdp_per_capita'].fillna(method='ffill')
-    final_df['CPI'] = final_df['CPI'].fillna(method='ffill')
+    final_df['cpi'] = final_df['cpi'].fillna(method='ffill')
     final_df['non_farm_payroll'] = final_df['non_farm_payroll'].fillna(method='ffill')
     final_df['inf_exp'] = final_df['inf_exp'].fillna(method='ffill')
     final_df['unemployment_rate'] = final_df['unemployment_rate'].fillna(method='ffill')
@@ -92,18 +99,22 @@ def load_csv(ticker: str):
     final_df['unemployment_rate'] = final_df['unemployment_rate']/100
     final_df['surprisePercentage'] = final_df['surprisePercentage']/100
 
-    #Dropping null values
-    final_df.dropna(inplace=True)
-    final_df.reset_index(drop=True, inplace=True)
+    #splitting our df
+    len_one_year_before = final_df[(final_df['year']>=first_year-1) & (final_df['year']<first_year)].shape[0]
+    not_needed_index = final_df[(final_df['year'] >= 1999) & (final_df['year'] < first_year-1)].shape[0]
 
-    # # calculating the return
-    # final_df['return'] = final_df['adjusted_close'].pct_change()
-    # final_df['return'][0]=0
+    first_split = final_df.iloc[not_needed_index:not_needed_index+len_one_year_before]
 
-    return final_df
+    second_split = final_df.iloc[not_needed_index + len_one_year_before:]
+    second_split.dropna(inplace=True)
+
+    final_df2 = pd.concat([first_split, second_split], axis=0)
+
+    final_df2.reset_index(drop=True, inplace=True)
+
+    return final_df2
 
 
-# On perd toujours les 252 jours sur cette fonction
 def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool = True, momentum: bool = True, distance: bool = True, volume: bool = True, price_eps_ratio: bool = True,
                       momentum_eps_ratio: bool = True, gold_return: bool = True, oil_return: bool = True, usd_return: bool = True, cpi_return: bool = True, period:int = 250,
                       gdp_return: bool = True, ten_year_return: bool = True, two_year_return: bool = True, spread_return: bool = True, volume_momentum: bool = True,
@@ -119,72 +130,91 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     final_df['return'] = final_df['adjusted_close'].pct_change()
     final_df['return'][0]=0
 
-    if high_low_ratio==True:
+    if high_low_ratio:
         final_df['high/low'] = final_df['high']/final_df['low'] - 1 # max variation in %
 
-    if volatility==True:
+    if volatility:
         for day in days:
             final_df[f'volatility_{day}days'] = final_df['return'].rolling(day).std().shift(1)
 
-    if momentum==True:
+    if momentum:
         for day in days:
             final_df[f'momentum_{day}days'] = final_df['return'].rolling(day).mean().shift(1)
 
-    if distance==True:
+    if distance:
         for day in days:
             final_df[f'distance_{day}days'] = (final_df['return'] - final_df['return'].rolling(day).mean()).shift(1)
 
-    if volume==True:
+    if volume:
         for day in days:
             final_df[f'volume_{day}days'] = (final_df['volume'].rolling(day).mean()/final_df['volume']).shift(1)
 
-    if volume_momentum==True:
+    if volume_momentum:
         for day in days:
             final_df[f'volume_momentum_{day}days'] = final_df['volume'].rolling(day).mean().shift(1)
 
-    if price_eps_ratio==True:
+    if price_eps_ratio:
         final_df['price/eps'] = final_df['adjusted_close']/final_df['reportedEPS']
 
-    if momentum_eps_ratio==True:
+    if momentum_eps_ratio:
         for day in days:
             final_df[f'momentum_{day}days/eps']=final_df[f'momentum_{day}days']/final_df['reportedEPS']
 
-    if gold_return==True:
+    if gold_return:
         final_df['gold_return'] = final_df['gold_price'].pct_change()
 
-    if ten_year_return==True:
+    if ten_year_return:
         final_df['10Y_return'] = final_df['10Y_yield'].pct_change()
 
-    if two_year_return==True:
+    if two_year_return:
         final_df['2Y_return'] = final_df['2Y_yield'].pct_change()
 
-    if spread_return==True:
+    if spread_return:
         final_df['spread_return'] = final_df['10_2_spread'].pct_change()
         final_df['spread_return'].replace([np.inf, -np.inf], 0, inplace=True)
 
-    if oil_return==True:
+    if oil_return:
         final_df['oil_return'] = final_df['oil_price'].pct_change()
 
-    if usd_return==True:
+    if usd_return:
         final_df['usd_return'] = final_df['usd_price'].pct_change()
 
-    if unemployement_return==True:
+    if unemployement_return:
         final_df['unemployement_return'] = final_df['unemployment_rate'].pct_change()
 
-    if cpi_return==True:
-        final_df['cpi_return'] = final_df['CPI'].pct_change(periods=30)
+    if cpi_return:
+        final_df['cpi_return'] = final_df['cpi'].pct_change(periods=30)
 
-    if non_farm_payroll_return==True:
+    if non_farm_payroll_return:
         final_df['non_farm_payroll_return'] = final_df['non_farm_payroll'].pct_change(periods=30)
 
-    if gdp_return==True:
+    if gdp_return:
         final_df['gdp_return'] = final_df['gdp_per_capita'].pct_change(periods=period)
 
-    final_df.drop(columns=['high', 'low','open', 'close', 'adjusted_close'], inplace=True)
+    final_df.drop(columns=['high', 'low','open', 'close', 'adjusted_close', 'year'], inplace=True)
     final_df.dropna(inplace=True)
     final_df.reset_index(drop=True, inplace=True)
 
     return final_df
+
+
+def clean_data(df: pd.DataFrame):
+    final_df = df.copy()
+
+    final_df.dropna(inplace=True)
+    final_df.drop(columns='date', inplace=True)
+    final_df.reset_index(drop=True, inplace=True)
+
+    return final_df
+
+def ready_to_train_df(ticker:str):
+
+    loaded_features_df = features_creation(ticker=ticker)
+    cleaned_df = clean_data(loaded_features_df)
+    scaled_df = scaler(cleaned_df)
+
+    return scaled_df
+
 
 def return_tickers():
     """
