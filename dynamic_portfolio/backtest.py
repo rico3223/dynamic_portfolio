@@ -78,6 +78,25 @@ class BacktestBase(object):
             self.print_balance(bar)
             self.print_net_wealth(bar)
 
+    def max_drawdown_absolute(length_interval, return_col):
+        return_col = return_col[1:]
+        max_drawdown = 0
+        index_drawdown_final = []
+        index_drawdown_temp = []
+        counter = 0
+
+        for k in range(0, return_col.shape[0]-length_interval):
+            counter += 1
+            temp_df = return_col[k: k+length_interval]
+            sum_return = np.sum(temp_df)
+            index_drawdown_temp = list(range(k, k+length_interval))
+            if sum_return < max_drawdown:
+                max_drawdown = sum_return
+                index_drawdown_final = index_drawdown_temp
+                counter = 0
+
+        return max_drawdown, index_drawdown_final
+
     def close_out(self, bar):
 
         date, price = self.get_data_price(bar)
