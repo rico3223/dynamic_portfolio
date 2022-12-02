@@ -46,16 +46,17 @@ def backtest_split(df: pd.DataFrame, split_ratio:float = 0.8):
     return model_df, backtest_df
 
 
-#update to take in consideration the split
 def ready_to_train_df(ticker:str):
 
     loaded_features_df = features_creation(ticker=ticker)
     cleaned_df = clean_data(loaded_features_df)
-    scaled_df = scaler(cleaned_df)
+    scaled_train_df = scaler(cleaned_df)[0]
 
-    return scaled_df
+    return scaled_train_df
 
-def pca():
-    pass
+def ready_to_test(ticker:str):
+    loaded_features_df = features_creation(ticker=ticker)
+    cleaned_df = clean_data(loaded_features_df)
+    scaled_test_df = scaler(cleaned_df)[1]
 
-# a partir de PCA, quelle features tu retiens ?
+    return scaled_test_df
