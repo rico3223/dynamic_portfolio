@@ -14,7 +14,7 @@ def scaler(df: pd.DataFrame):
     df_scaled = df.copy()
 
     #Selecting relevant columns to scale (we dropped 'return' since its our target and we dropped 'date')
-    columns_to_scale = df_scaled.drop(columns=['return', 'date']).columns
+    columns_to_scale = df_scaled.drop(columns=['return']).columns
 
     # Scaling our data based
     for column in columns_to_scale:
