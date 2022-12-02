@@ -17,7 +17,7 @@ def get_folds(
     '''
 
     folds = []
-    for idx in range(0, len(df)), fold_stride):
+    for idx in range(0, len(df), fold_stride):
         # Exits the loop as soon as the last fold index would exceed the last index
         if (idx + fold_length) > len(df):
             break
@@ -166,7 +166,7 @@ def cross_validate_ml() :
     The goal of this function is to make splits and sequences on each FOLDS.
     Then, apply a model.
     '''
-    folds = get_folds(df, fold_length = fold_length  , fold_stride = fold_stride) # 1 - Creating FOLDS
+    folds = get_folds(df, fold_length, fold_stride) # 1 - Creating FOLDS
 
     for fold_id, fold in enumerate(folds):
 
