@@ -36,3 +36,8 @@ def ready_to_train_df(ticker:str):
     scaled_df = scaler(cleaned_df)
 
     return scaled_df
+
+def pca():
+    pass
+
+# a partir de PCA, quelle features tu retiens ?
