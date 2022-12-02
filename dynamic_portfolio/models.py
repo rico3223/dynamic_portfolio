@@ -12,7 +12,7 @@ def model_linear_regression():
     model_lr.score(X_test, y_test)
 
 def model_knn():
-    model_knn = KNeighborsRegressor(n_neighbors=2).fit(X_train, y_train)
+    model_knn = KNeighborsRegressor(n_neighbors=20).fit(X_train, y_train)
 
 def model_sgdr():
     model_lin_reg_sgd = SGDRegressor(loss='squared_error').fit(X_train, y_train)
