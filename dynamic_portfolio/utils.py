@@ -3,9 +3,6 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-#importing local librairies
-from dynamic_portfolio.preprocess import scaler
-
 
 def load_csv(ticker: str):
     """
@@ -207,11 +204,7 @@ def clean_data(df: pd.DataFrame):
 
     return final_df
 
-def ready_to_train_df(ticker:str):
 
-    loaded_features_df = features_creation(ticker=ticker)
-    cleaned_df = clean_data(loaded_features_df)
-    scaled_df = scaler(cleaned_df)
 
     return scaled_df
 

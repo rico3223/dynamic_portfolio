@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.preprocessing import RobustScaler, StandardScaler, MinMaxScaler
 
 #Local librairies
-from dynamic_portfolio.utils import load_csv, features_creation
+from dynamic_portfolio.utils import load_csv, features_creation, clean_data
 
 
 
@@ -28,3 +28,11 @@ def scaler(df: pd.DataFrame):
             df_scaled[column] = scaler_robust.fit_transform(df_scaled[[column]])
 
     return df_scaled
+
+def ready_to_train_df(ticker:str):
+
+    loaded_features_df = features_creation(ticker=ticker)
+    cleaned_df = clean_data(loaded_features_df)
+    scaled_df = scaler(cleaned_df)
+
+    return scaled_df
