@@ -7,75 +7,37 @@ from sklearn.svm import SVR
 from xgboost import XGBRegressor
 from sklearn.neighbors import KNeighborsRegressor
 
-def model_linear_regression():
-    model_lr = LinearRegression().fit(X_train, y_train)
-    model_lr.score(X_test, y_test)
-
-def model_knn():
-    model_knn = KNeighborsRegressor(n_neighbors=20).fit(X_train, y_train)
-
-def model_sgdr():
-    model_lin_reg_sgd = SGDRegressor(loss='squared_error').fit(X_train, y_train)
-    model_lin_reg_sgd.score(X_test, y_test)
-
-def model_huberr():
-    model_huberr = HuberRegressor().fit(X_train, y_train)
-    model_huberr.score(X_test, y_test)
-
-def model_lars():
-    model_lars = Lars().fit(X_train, y_train)
-    model_lars.score(X_test, y_test)
-
-def model_lasso():
-    model_lasso = Lasso().fit(X_train, y_train)
-    model_lasso.score(X_test, y_test)
-
-def model_ransacr():
-    model_ransacr = RANSACRegressor().fit(X_train, y_train)
-    model_ransacr.score(X_test, y_test)
-
-def model_ridge():
-    model_ridge = Ridge().fit(X_train, y_train)
-    model_ridge.score(X_test, y_test)
-
-def model_theilsenr():
-    model_theilsenr = TheilSenRegressor().fit(X_train, y_train)
-    model_theilsenr.score(X_test, y_test)
-
-def model_svr():
-    model_svr = SVR().fit(X_train, y_train)
-    model_svr.score(X_test, y_test)
-
-def model_elasticnet():
-    model_elasticnet = ElasticNet().fit(X_train, y_train)
-    model_elasticnet.score(X_test, y_test)
-
-def model_forestreg():
-    model_forestreg = RandomForestRegressor().fit(X_train, y_train)
-    model_forestreg.score(X_test, y_test)
-
-def model_baggingr():
-    model_baggingr = BaggingRegressor().fit(X_train, y_train)
-    model_baggingr.score(X_test, y_test)
-
-def model_daboostr():
-    model_daboostr = AdaBoostRegressor().fit(X_train, y_train)
-    model_daboostr.score(X_test, y_test)
-
-def model_gradboostr():
-    model_gradboostr = GradientBoostingRegressor().fit(X_train, y_train)
-    model_gradboostr.score(X_test, y_test)
-
-def model_XGBR():
-    model_XGBR = XGBRegressor().fit(X_train, y_train)
-    model_XGBR.score(X_test, y_test)
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV
+from xgboost import XGBRegressor
+from sklearn.ensemble import RandomForestRegressor
+import pandas as pd
+import numpy as np
+import joblib
+from sklearn.base import TransformerMixin, BaseEstimator
 
 
-def model_Votingr():
-    model_Votingr = VotingRegressor().fit(X_train, y_train)
-    model_Votingr.score(X_test, y_test)
+class FeatureImportance(TransformerMixin, BaseEstimator):
+    def __init__(self,threshold=1e-15):
+        self.threshold = threshold
+    def fit(self, X, y):
+        self.rf = RandomForestRegressor().fit(X,y)
+        return self
+    def transform(self, X, y=None):
+        r = np.where(self.rf.feature_importances_>self.threshold)[0]
+        return X[:,r.tolist()]
 
+def train_model(df:pd.DataFrame,name:str="model"):
+    """train and fine tune XGboost model and save it as pikkle """
+#preprocess step for the input df
+# #train process for model
+    model = make_pipeline(FeatureImportance(), XGBRegressor())
+    # find a way to add the treshold as parameter for the gridsearch
+    # gridsearch or randomizedsearch ?
+    #GridsearchCV for fine_tuned
+    #remember to add some print
+    search = GridSearchCV()
+    model = search.best_estimator_
 
-def model_stackingr():
-    model_stackingr = StackingRegressor().fit(X_train, y_train)
-    model_stackingr.score(X_test, y_test)
+    #save model
+    joblib.dump(model, "model/XGBoost_model.joblib")
