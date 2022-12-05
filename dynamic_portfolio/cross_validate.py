@@ -14,7 +14,6 @@ cross_val = {
 }
 
 
-
 #Split the dataset by FOLDS
 def get_folds(
     df: pd.DataFrame,
@@ -39,7 +38,7 @@ def get_folds(
 
 
 #Split FOLDS by Train et Test
-#### FOR ONE FOLD !!!!!
+#### FOR ONE FOLDS !!!!!
 def train_test_split(fold: pd.DataFrame,
                      train_test_ratio =  cross_val['train_test_ratio'],
                      input_length = cross_val['input_length'],
@@ -57,29 +56,13 @@ def train_test_split(fold: pd.DataFrame,
 
     # TEST SET
     # ======================
-<<<<<<< HEAD
     # fold_test starts right after the end of fold_train
     first_test_idx = last_train_idx - input_length
-=======
-    first_test_idx = last_train_idx - input_length # faut il pas changer le - en + ??
->>>>>>> ed792e921c7e16c27e40524cdc76cebe6054a464
     fold_test = fold.iloc[first_test_idx:, :]
 
     return (fold_train, fold_test)
 
-<<<<<<< HEAD
 def cross_validate_ml(df, model) :
-=======
-# est ce que les train et test set n s'entremelent pas ?
-# changer le ticker BF-B dans la fonction tickers
-
-
-
-
-
-#Loop for split on FOLDS
-def cross_validate_dl(df:pd.DataFrame, fold_length:int, fold_stride:int) :
->>>>>>> ed792e921c7e16c27e40524cdc76cebe6054a464
     '''
     get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
     The goal of this function is to make splits and sequences on each FOLDS.
@@ -97,27 +80,6 @@ def cross_validate_dl(df:pd.DataFrame, fold_length:int, fold_stride:int) :
                                                 )
 
 
-<<<<<<< HEAD
-=======
-def cross_validate_ml(df:pd.DataFrame, fold_length:int, fold_stride:int) :
-    '''
-    get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
-    The goal of this function is to make splits and sequences on each FOLDS.
-    Then, apply a model.
-    '''
-    folds = get_folds(df, fold_length, fold_stride) # 1 - Creating FOLDS
-
-    for fold_id, fold in enumerate(folds):
-
-        # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
-
-        (fold_train, fold_test) = train_test_split(fold = fold,
-                                                train_test_ratio = train_test_ratio,
-                                                input_length = input_length ,
-                                                horizon = horizon)
-
-        # 3 - Scanninng fold_train and fold_test for SEQUENCES
->>>>>>> ed792e921c7e16c27e40524cdc76cebe6054a464
 
         X_train, y_train = fold_train, fold_train['return']
 
