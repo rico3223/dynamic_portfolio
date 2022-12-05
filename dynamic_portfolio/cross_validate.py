@@ -1,13 +1,24 @@
 # importing relevant librairies
 import numpy as np
 import pandas as pd
-from dynamic_portfolio.params import cross_val
+from sklearn.metrics import mean_squared_error
+
+
+cross_val = {
+    'fold_length' : 252, # Trading days for 1 year
+    'fold_stride' : 60, # Step between folds, here one quarter
+    'train_test_ratio' : 0.7, # Fold split ratio for train/test
+    'input_length' : 0, # Input for sequences, here at 0
+    'horizon' : 1, # We predict for t+1 so here 1
+    'output_length' : 1, # Number of targets wanted, here return
+}
+
 
 #Split the dataset by FOLDS
 def get_folds(
     df: pd.DataFrame,
-    fold_length: int,
-    fold_stride: int):
+    fold_length: cross_val['fold_length'],
+    fold_stride: cross_val['fold_stride']):
     '''
     This function slides through the Time Series dataframe of shape (n_timesteps, n_features) to create folds
     - of equal `fold_length`
@@ -29,9 +40,9 @@ def get_folds(
 #Split FOLDS by Train et Test
 #### FOR ONE FOLDS !!!!!
 def train_test_split(fold: pd.DataFrame,
-                     train_test_ratio: float,
-                     input_length: int,
-                     horizon: int) :
+                     train_test_ratio =  cross_val['train_test_ratio'],
+                     input_length = cross_val['input_length'],
+                     ):
     '''
     Returns a train dataframe and a test dataframe (fold_train, fold_test)
     from which one can sample (X,y) sequences.
@@ -45,142 +56,41 @@ def train_test_split(fold: pd.DataFrame,
 
     # TEST SET
     # ======================
+    # fold_test starts right after the end of fold_train
     first_test_idx = last_train_idx - input_length
     fold_test = fold.iloc[first_test_idx:, :]
 
     return (fold_train, fold_test)
 
-
-#One sequences
-### Use in tht next one function
-def get_Xi_yi(first_index: int,
-              fold: pd.DataFrame,
-              horizon: int,
-              input_length: int,
-              output_length: int):
-    '''
-    - extracts one sequence from a fold
-    - returns a pair (Xi, yi) with:
-        * len(Xi) = `input_length` and Xi starting at first_index
-        * len(yi) = `output_length`
-        * last_Xi and first_yi separated by the gap = horizon -1
-    '''
-
-    Xi_start = first_index
-    Xi_last = Xi_start + input_length
-    yi_start = Xi_last + horizon - 1
-    yi_last = yi_start + output_length
-
-    Xi = fold[Xi_start:Xi_last]
-    yi = fold[yi_start:yi_last][TARGET]
-
-    return (Xi, yi)
-
-
-#Many sequences
-def get_X_y(fold: pd.DataFrame,
-            horizon: int,
-            input_length: int,
-            output_length: int,
-            stride: int,
-            shuffle=True):
-    """
-    - Uses `data`, a 2D-array with axis=0 for timesteps, and axis=1 for (targets+covariates columns)
-    - Returns a Tuple (X,y) of two ndarrays :
-        * X.shape = (n_samples, input_length, n_covariates)
-        * y.shape =
-            (n_samples, output_length, n_targets) if all 3-dimensions are of size > 1
-            (n_samples, output_length) if n_targets == 1
-            (n_samples, n_targets) if output_length == 1
-            (n_samples, ) if both n_targets and lenghts == 1
-    - You can shuffle the pairs (Xi,yi) of your fold
-    """
-
-    X = []
-    y = []
-
-    for i in range(0, len(fold), stride):
-        ## Extracting a sequence starting at index_i
-        Xi, yi = get_Xi_yi(first_index=i,
-                           fold=fold_test,
-                           horizon=horizon,
-                           input_length=input_length,
-                           output_length=output_length)
-        ## Exits loop as soon as we reach the end of the dataset
-        if len(yi) < output_length:
-            break
-        X.append(Xi)
-        y.append(yi)
-
-    X = np.array(X)
-    y = np.array(y)
-    y = np.squeeze(y)
-
-    if shuffle:
-        idx = np.arange(len(X))
-        np.random.shuffle(idx)
-        X = X[idx]
-        y = y[idx]
-
-    return X, y
-
-
-#Loop for split on FOLDS
-def cross_validate_dl() :
+def cross_validate_ml(df, model) :
     '''
     get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
     The goal of this function is to make splits and sequences on each FOLDS.
     Then, apply a model.
     '''
-    folds = get_folds(df, fold_length, fold_stride) # 1 - Creating FOLDS
+    folds = get_folds(df, fold_length = cross_val['fold_length'], fold_stride = cross_val['fold_stride'])
 
-    for fold_id, fold in enumerate(folds):
+    scores = []
 
-        # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
-
+    for fold in folds:
         (fold_train, fold_test) = train_test_split(fold = fold,
-                                                train_test_ratio = train_test_ratio,
-                                                input_length = input_length ,
-                                                horizon = horizon)
-
-        # 3 - Scanninng fold_train and fold_test for SEQUENCES
-
-        X_train, y_train = get_X_y(fold = fold_train,
-                                horizon = horizon,
-                                input_length = input_length ,
-                                output_length = output_length,
-                                stride = stride )
-
-        X_test, y_test = get_X_y(fold_test,
-                                horizon = horizon,
-                                input_length = input_length,
-                                output_length = output_length,
-                                stride = stride)
-
-        #Rajouter le modèle
+                                                train_test_ratio = cross_val['train_test_ratio'],
+                                                input_length = cross_val['input_length'],
+                                                horizon = cross_val['horizon']
+                                                )
 
 
-def cross_validate_ml() :
-    '''
-    get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
-    The goal of this function is to make splits and sequences on each FOLDS.
-    Then, apply a model.
-    '''
-    folds = get_folds(df, fold_length, fold_stride) # 1 - Creating FOLDS
-
-    for fold_id, fold in enumerate(folds):
-
-        # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
-
-        (fold_train, fold_test) = train_test_split(fold = fold,
-                                                train_test_ratio = train_test_ratio,
-                                                input_length = input_length ,
-                                                horizon = horizon)
-
-        # 3 - Scanninng fold_train and fold_test for SEQUENCES
 
         X_train, y_train = fold_train, fold_train['return']
 
         X_test, y_test = fold_test, fold_test['return']
 
-        #Rajouter le modèle
+        # instantiate the model chosen as a parameter
+        model = model
+        # fit model on each X_train, y_train
+        model.fit(X_train, y_train)
+
+        rmse_model = (mean_squared_error(y_test, model.predict(X_test)))**0.5
+        scores.append(rmse_model)
+
+    return np.mean(scores)
