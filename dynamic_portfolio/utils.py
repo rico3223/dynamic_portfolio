@@ -127,6 +127,7 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     final_df['return'] = final_df['adjusted_close'].pct_change()
     final_df['return'][0]=0
 
+
     if high_low_ratio:
         final_df['high/low'] = final_df['high']/final_df['low'] - 1 # max variation in %
 
