@@ -59,24 +59,12 @@ def train_test_split(fold: pd.DataFrame,
 
     return (fold_train, fold_test)
 
-<<<<<<< HEAD
-# est ce que les train et test set n s'entremelent pas ?
-# changer le ticker BF-B dans la fonction tickers
-
-
-
-
-
-#Loop for split on FOLDS
-def cross_validate_dl(df:pd.DataFrame, fold_length:int, fold_stride:int) :
-=======
 
 
 
 
 
 def cross_validate_ml(df, model) :
->>>>>>> f8b85e15bd7ca44027c08c380f629f83e2b51802
     '''
     get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
     The goal of this function is to make splits and sequences on each FOLDS.
@@ -89,49 +77,9 @@ def cross_validate_ml(df, model) :
         # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
 
         (fold_train, fold_test) = train_test_split(fold = fold,
-<<<<<<< HEAD
-                                                train_test_ratio = train_test_ratio,
-                                                input_length = input_length ,
-                                                horizon = horizon)
-
-        # 3 - Scanninng fold_train and fold_test for SEQUENCES
-
-        X_train, y_train = get_X_y(fold = fold_train,
-                                horizon = horizon,
-                                input_length = input_length ,
-                                output_length = output_length,
-                                stride = stride )
-
-        X_test, y_test = get_X_y(fold_test,
-                                horizon = horizon,
-                                input_length = input_length,
-                                output_length = output_length,
-                                stride = stride)
-
-        #Rajouter le modèle
-
-
-def cross_validate_ml(df:pd.DataFrame, fold_length:int, fold_stride:int) :
-    '''
-    get_folds() create many FOLDS, train_test_split() create a split on ONE FOLDS.
-    The goal of this function is to make splits and sequences on each FOLDS.
-    Then, apply a model.
-    '''
-    folds = get_folds(df, fold_length, fold_stride) # 1 - Creating FOLDS
-
-    for fold_id, fold in enumerate(folds):
-
-        # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
-
-        (fold_train, fold_test) = train_test_split(fold = fold,
-                                                train_test_ratio = train_test_ratio,
-                                                input_length = input_length ,
-                                                horizon = horizon)
-=======
                                                 train_test_ratio = cross_val['train_test_ratio'],
                                                 input_length = cross_val['input_length'] ,
                                                 )
->>>>>>> f8b85e15bd7ca44027c08c380f629f83e2b51802
 
         # 3 - Scanninng fold_train and fold_test for SEQUENCES
 
