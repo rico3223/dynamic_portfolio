@@ -143,6 +143,92 @@ class BacktestLongOnly(BacktestBase):
                     self.position = 0
         self.close_out(bar)
 
+class RotationBestWorst(BacktestBase):
+
+    def go_long(self, bar, units=None, amount=None):
+
+        if self.position == -1:
+            self.place_buy_order(bar, units= -self.units)
+        if units:
+            self.place_buy_order(bar, units=units)
+        elif amount:
+            if amount == 'all':
+                amount = self.amount
+            self.place_buy_order(bar, amount=amount)
+
+    def go_short(self, bar, units=None, amount=None):
+
+        if self.position == 1:
+            self.place_sell_order(bar, units= self.units)
+        if units:
+            self.place_sell_order(bar, units=units)
+        elif amount:
+            if amount == 'all':
+                amount = self.amount
+            self.place_sell_order(bar, amount=amount)
+
+    def run_rotation_strategy(self):
+
+        self.position = 0
+        self.trades = 0
+        self.amount = self.initial_amount
+        # Get y_pred returns from df
+        self.data['y_pred'] = self.data['y_pred']
+
+        for y_pred_return in range(0, len(self.data['y_pred'])):
+            if self.position == 0:
+                if self.data['y_pred'].iloc[y_pred_return] > 0.01:
+                    self.place_buy_order()
+                    self.position = 1
+            if self.position == 1:
+                if self.data['y_pred'].iloc[y_pred_return] < -0.01:
+                    self.place_sell_order()
+                    self.position = 0
+            if self.position == 0:
+                if self.data['y_pred'].iloc[y_pred_return] < -0.01:
+                    self.place_sell_order()
+                    self.position = 1
+
+        self.close_out()
+
+class LongOnlyStock(BacktestBase):
+
+    def run_best_performing(self):
+
+        self.position = 0
+        self.trades = 0
+        self.amount = self.initial_amount
+        # Get y_pred returns from df
+        self.data['y_pred'] = self.data['y_pred']
+
+        for y_pred_return in range(0, len(self.data['y_pred'])):
+            if self.position == 0:
+                if self.data['y_pred'].iloc[y_pred_return] in range(self.data['y_pred'][0], self.data['y_pred'][5]):
+                    self.place_buy_order
+                    self.position = 1
+
+        self.close_out()
+
+class WorstOnlyStock(BacktestBase):
+
+    def run_worst_performing(self):
+
+        self.position = 0
+        self.trades = 0
+        self.amount = self.initial_amount
+        # Get y_pred returns from df
+        self.data['y_pred'] = self.data['y_pred']
+
+        for y_pred_return in range(0, len(self.data['y_pred'])):
+            if self.position == 0:
+                if self.data['y_pred'].iloc[y_pred_return] in range(self.data['y_pred'][495], self.data['y_pred'][500]):
+                    self.place_sell_order
+                    self.position = 1
+
+        self.close_out()
+
+class
+
 
 class BacktestLongShort(BacktestBase):
 
