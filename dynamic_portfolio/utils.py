@@ -202,8 +202,9 @@ def clean_data(df: pd.DataFrame):
     final_df = df.copy()
 
     final_df.dropna(inplace=True)
-    final_df.drop(columns='date', inplace=True)
     final_df.reset_index(drop=True, inplace=True)
+    final_df.set_index('date', drop=True, inplace=True)
+
 
     return final_df
 
