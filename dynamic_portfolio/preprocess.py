@@ -38,10 +38,10 @@ def scaler(df: pd.DataFrame):
 def backtest_split(df: pd.DataFrame, split_ratio:float = 0.8):
 
     model_df = df.iloc[:round(split_ratio*len(df)), :].copy()
-    model_df.reset_index(drop=True, inplace=True)
+    #model_df.reset_index(drop=True, inplace=True)
 
     backtest_df = df.iloc[round(split_ratio*len(df))+1 : , :].copy()
-    backtest_df.reset_index(drop=True, inplace=True)
+    #backtest_df.reset_index(drop=True, inplace=True)
 
     return model_df, backtest_df
 
@@ -54,7 +54,7 @@ def ready_to_train_df(ticker:str):
 
     return scaled_train_df
 
-def ready_to_test(ticker:str):
+def ready_to_test_df(ticker:str):
     loaded_features_df = features_creation(ticker=ticker)
     cleaned_df = clean_data(loaded_features_df)
     scaled_test_df = scaler(cleaned_df)[1]
