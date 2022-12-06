@@ -72,24 +72,20 @@ def cross_validate_ml(df, model) :
     '''
     folds = get_folds(df, fold_length = cross_val['fold_length'], fold_stride = cross_val['fold_stride']) # 1 - Creating FOLDS
     scores =[]
+    baseline = []
     for fold in folds:
-
         # 2 - CHRONOLOGICAL TRAIN TEST SPLIT of the current FOLD
-
         (fold_train, fold_test) = train_test_split(fold = fold,
                                                 train_test_ratio = cross_val['train_test_ratio'],
                                                 input_length = cross_val['input_length'] ,
                                                 )
-
         # 3 - Scanninng fold_train and fold_test for SEQUENCES
-
-        X_train, y_train = fold_train, fold_train['return']
-
-        X_test, y_test = fold_test, fold_test['return']
-
-        model = model()
+        X_train, y_train = fold_train, fold_train[['return']].shift(1).replace(np.nan,0)
+        X_test, y_test = fold_test, fold_test[['return']].shift(1).replace(np.nan,0)
         model.fit(X_train, y_train)
         rmse_model = (mean_squared_error(y_test, model.predict(X_test)))**0.5
         scores.append(rmse_model)
+        rmse_baseline = mean_squared_error(y_test.iloc[[0]], y_train.iloc[[-1]])**0.5
+        baseline.append(rmse_baseline)
 
-    return np.mean(scores)
+    return np.mean(scores), np.mean(baseline)
