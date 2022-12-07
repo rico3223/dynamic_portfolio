@@ -82,6 +82,7 @@ def cross_validate_ml(df, model) :
         # 3 - Scanninng fold_train and fold_test for SEQUENCES
         X_train, y_train = fold_train, fold_train[['return']].shift(1).replace(np.nan,0)
         X_test, y_test = fold_test, fold_test[['return']].shift(1).replace(np.nan,0)
+
         model.fit(X_train, y_train)
         rmse_model = (mean_squared_error(y_test, model.predict(X_test)))**0.5
         scores.append(rmse_model)
@@ -89,3 +90,30 @@ def cross_validate_ml(df, model) :
         baseline.append(rmse_baseline)
 
     return np.mean(scores), np.mean(baseline)
+
+#Custom gridsearch a titre informatif, ce gridsearch nous a permis de choisir le meilleur modele avec les meilleurs hyperparametres
+# En fonction des models, les arguments dans la fonction devrait changer
+def custom_gridsearch(df, model, max_depth=[2,3,4], criterion = ['friedman_mse', 'squared_error', 'mse'], n_estimator=[50, 75, 100], learning_rate=[0.08, 0.1, 0.12], loss=['squared_error', 'absolute_error', 'huber']):
+    counter = 0
+    rmse = []
+    baseline = []
+    params = []
+    for max_depth_i in max_depth:
+        for criterion_i in criterion:
+            for n_estimator_i in n_estimator:
+                for learning_rate_i in learning_rate:
+                    for loss_i in loss:
+                        test = cross_validate_ml(df = df, model = model(max_depth=max_depth_i,
+                                                                   criterion = criterion_i,
+                                                                   n_estimators = n_estimator_i,
+                                                                   learning_rate = learning_rate_i,
+                                                                   loss = loss_i))
+                        rmse.append(test[0])
+                        baseline.append(test[1])
+                        params.append((max_depth_i, criterion_i, n_estimator_i, learning_rate_i))
+                        counter += 1
+                        print(f'model {counter} done with parameters: max_depth = {max_depth_i}, criterion = {criterion_i}, estimators = {n_estimator_i}, learning rate = {learning_rate_i}, loss = {loss_i}, rmse = {test[0]}')
+    idx_min = np.argmin(rmse)
+    best_params = params[idx_min]
+
+    return best_params, rmse, params
