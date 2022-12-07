@@ -2,6 +2,9 @@
 import numpy as np
 import pandas as pd
 import yfinance as yf
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 
 def load_csv(ticker: str):
@@ -14,7 +17,7 @@ def load_csv(ticker: str):
     #Loading all relevant csv files
 
     #Loading stock return
-    ticker_df = pd.read_csv(f'../raw_data/stocks_return/adj_return_{ticker}.csv')
+    ticker_df = pd.read_csv(f'raw_data/stocks_return/adj_return_{ticker}.csv')
     ticker_df.rename(columns={'timestamp':'date'}, inplace=True)
     ticker_df.sort_values('date', ascending=True, inplace=True)
     ticker_df.reset_index(inplace=True, drop=True)
@@ -24,7 +27,7 @@ def load_csv(ticker: str):
         ticker_df.reset_index(inplace=True, drop=True)
 
     #Loading stocks eps
-    ticker_eps = pd.read_csv(f'../raw_data/eps/data_{ticker}.csv', index_col=0)
+    ticker_eps = pd.read_csv(f'raw_data/eps/data_{ticker}.csv', index_col=0)
     ticker_eps['date'] = ticker_eps['reportedDate'].copy()
     ticker_eps['reportedEPS'].replace('None', 0, inplace=True)
     ticker_eps['reportedEPS'] = pd.to_numeric(ticker_eps['reportedEPS'])
@@ -41,18 +44,18 @@ def load_csv(ticker: str):
     ticker_eps.drop(columns=['year', 'fiscalDateEnding', 'estimatedEPS', 'surprise', 'reportedDate'], inplace=True)
 
     #Loading all macros and commodities
-    gold = pd.read_csv('../raw_data/macro/gold.csv', index_col=0, decimal=',')
-    us_dollar = pd.read_csv('../raw_data/macro/usd.csv', index_col=0)
-    credit_spread = pd.read_csv('../raw_data/macro/us_yields.csv', index_col=0)
-    oil = pd.read_csv('../raw_data/macro/oil.csv', index_col=0)
-    orders = pd.read_csv('../raw_data/macro/orders.csv', index_col=0)
-    ffunds_rate = pd.read_csv('../raw_data/macro/fed_funds.csv', index_col=0)
-    unemployment = pd.read_csv('../raw_data/macro/unemployment.csv', index_col=0)
-    inflation_expectation = pd.read_csv('../raw_data/macro/inflation_expectation.csv', index_col=0)
-    non_farm_payroll = pd.read_csv('../raw_data/macro/non_farm_payroll.csv', index_col=0)
-    cpi = pd.read_csv('../raw_data/macro/cpi.csv', index_col=0)
-    retails = pd.read_csv('../raw_data/macro/retail_sales.csv', index_col=0)
-    gdp_capita = pd.read_csv('../raw_data/macro/gdp_per_capita.csv', index_col=0)
+    gold = pd.read_csv('raw_data/macro/gold.csv', index_col=0, decimal=',')
+    us_dollar = pd.read_csv('raw_data/macro/usd.csv', index_col=0)
+    credit_spread = pd.read_csv('raw_data/macro/us_yields.csv', index_col=0)
+    oil = pd.read_csv('raw_data/macro/oil.csv', index_col=0)
+    orders = pd.read_csv('raw_data/macro/orders.csv', index_col=0)
+    ffunds_rate = pd.read_csv('raw_data/macro/fed_funds.csv', index_col=0)
+    unemployment = pd.read_csv('raw_data/macro/unemployment.csv', index_col=0)
+    inflation_expectation = pd.read_csv('raw_data/macro/inflation_expectation.csv', index_col=0)
+    non_farm_payroll = pd.read_csv('raw_data/macro/non_farm_payroll.csv', index_col=0)
+    cpi = pd.read_csv('raw_data/macro/cpi.csv', index_col=0)
+    retails = pd.read_csv('raw_data/macro/retail_sales.csv', index_col=0)
+    gdp_capita = pd.read_csv('raw_data/macro/gdp_per_capita.csv', index_col=0)
 
 
     #Creating our final df and merging with relevant files

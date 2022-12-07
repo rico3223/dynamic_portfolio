@@ -4,9 +4,10 @@ from sklearn.linear_model import ElasticNet
 from sklearn.ensemble import RandomForestRegressor, BaggingRegressor, AdaBoostRegressor
 from sklearn.ensemble import GradientBoostingRegressor, VotingRegressor, StackingRegressor
 from sklearn.svm import SVR
+import preprocess as prep
 from xgboost import XGBRegressor
 from sklearn.neighbors import KNeighborsRegressor
-
+import  dynamic_portfolio.utils as utils
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import GridSearchCV
 from xgboost import XGBRegressor
@@ -15,6 +16,9 @@ import pandas as pd
 import numpy as np
 import joblib
 from sklearn.base import TransformerMixin, BaseEstimator
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 
 class FeatureImportance(TransformerMixin, BaseEstimator):
@@ -27,17 +31,35 @@ class FeatureImportance(TransformerMixin, BaseEstimator):
         r = np.where(self.rf.feature_importances_>self.threshold)[0]
         return X[:,r.tolist()]
 
-def train_model(df:pd.DataFrame,name:str="model"):
-    """train and fine tune XGboost model and save it as pikkle """
-#preprocess step for the input df
-# #train process for model
-    model = make_pipeline(FeatureImportance(), XGBRegressor())
-    # find a way to add the treshold as parameter for the gridsearch
-    # gridsearch or randomizedsearch ?
-    #GridsearchCV for fine_tuned
-    #remember to add some print
-    search = GridSearchCV()
-    model = search.best_estimator_
+def full_training():
+    tickers = utils.return_tickers()
+    preds = []
+    for ticker in tickers:
+        X_train = prep.ready_to_train_df(ticker)
+        y_train = prep.ready_to_train_df(ticker)['return'].shift(1).replace(np.nan,0)
+        try :
+            model = joblib.load(f"raw_data/models/{ticker}_XGBoostDefault.joblib")
+        except :
+            model = XGBRegressor(n_jobs=-1)
+            print("fitting model...")
+            model.fit(X_train, y_train)
+            joblib.dump(model, f"raw_data/models/{ticker}_XGBoostDefault.joblib")
 
-    #save model
-    joblib.dump(model, "model/XGBoost_model.joblib")
+
+
+def pred():
+    tickers = utils.return_tickers()
+    preds = []
+    for ticker in tickers:
+        model = joblib.load(f"raw_data/models/{ticker}_XGBoostDefault.joblib")
+        X_test = prep.ready_to_test_df(ticker)
+        pred_ticker = pd.DataFrame(model.predict(X_test),columns=[f"{ticker}"], index = X_test.index)
+        preds.append(pred_ticker)
+        print(f"ticker {ticker} done index # {tickers.index(ticker)}")
+    final_df = pd.concat(preds, axis=1)
+    final_df.to_csv("raw_data/results/pred.csv")
+
+
+
+if __name__=="__main__":
+    pred()
