@@ -31,19 +31,24 @@ class FeatureImportance(TransformerMixin, BaseEstimator):
         r = np.where(self.rf.feature_importances_>self.threshold)[0]
         return X[:,r.tolist()]
 
-def full_training():
+def full_training(force_retrain=False, model=XGBRegressor):
     tickers = utils.return_tickers()
     for ticker in tickers:
         X_train = prep.ready_to_train_df(ticker)
         y_train = prep.ready_to_train_df(ticker)['return'].shift(1).replace(np.nan,0)
-        try :
-            model = joblib.load(f"raw_data/models/{ticker}_XGBoostDefault.joblib")
-        except :
-            model = GradientBoostingRegressor()
+        if not force_retrain :
+            try :
+                model = joblib.load(f"raw_data/models/{ticker}_XGBoostDefault.joblib")
+            except :
+                model = model(n_jobs=-1)
+                print("fitting model...")
+                model.fit(X_train, y_train)
+                joblib.dump(model, f"raw_data/models/{ticker}_XGBoostDefault.joblib")
+        else :
+            model = model(n_jobs=-1)
             print("fitting model...")
             model.fit(X_train, y_train)
             joblib.dump(model, f"raw_data/models/{ticker}_GradientBoostingDefault.joblib")
-
 
 
 def pred():
