@@ -33,17 +33,16 @@ class FeatureImportance(TransformerMixin, BaseEstimator):
 
 def full_training():
     tickers = utils.return_tickers()
-    preds = []
     for ticker in tickers:
         X_train = prep.ready_to_train_df(ticker)
         y_train = prep.ready_to_train_df(ticker)['return'].shift(1).replace(np.nan,0)
         try :
             model = joblib.load(f"raw_data/models/{ticker}_XGBoostDefault.joblib")
         except :
-            model = XGBRegressor(n_jobs=-1)
+            model = GradientBoostingRegressor()
             print("fitting model...")
             model.fit(X_train, y_train)
-            joblib.dump(model, f"raw_data/models/{ticker}_XGBoostDefault.joblib")
+            joblib.dump(model, f"raw_data/models/{ticker}_GradientBoostingDefault.joblib")
 
 
 
@@ -51,15 +50,17 @@ def pred():
     tickers = utils.return_tickers()
     preds = []
     for ticker in tickers:
-        model = joblib.load(f"raw_data/models/{ticker}_XGBoostDefault.joblib")
+        model = joblib.load(f"raw_data/models/{ticker}_GradientBoostingDefault.joblib")
         X_test = prep.ready_to_test_df(ticker)
         pred_ticker = pd.DataFrame(model.predict(X_test),columns=[f"{ticker}"], index = X_test.index)
         preds.append(pred_ticker)
         print(f"ticker {ticker} done index # {tickers.index(ticker)}")
     final_df = pd.concat(preds, axis=1)
-    final_df.to_csv("raw_data/results/pred.csv")
+    final_df = final_df.loc['2021-01-04':].dropna(axis=1)
+    final_df.to_csv("raw_data/results/gradientboosting_pred.csv")
 
 
 
 if __name__=="__main__":
+    full_training()
     pred()
