@@ -227,7 +227,6 @@ class WorstOnlyStock(BacktestBase):
 
         self.close_out()
 
-class
 
 
 class BacktestLongShort(BacktestBase):
