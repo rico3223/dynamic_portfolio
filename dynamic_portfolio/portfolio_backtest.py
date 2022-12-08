@@ -21,38 +21,38 @@ class Portfolio():
     def rotation_strategy(self):
         shorts = []
         longs = []
-        for row in self.preds.index:
-            value = self.preds.loc[row].sort_values(ascending=True)
+        for self.row in self.preds.index[:len(self.preds)-1]:
+            value = self.preds.loc[self.row].sort_values(ascending=True)
             print(value)
-            for stock in value.index[:4]:
-                print(stock)
-                if stock not in shorts and stock in value.index[:4]:
-                    self.place_sell_order()
-                    shorts.append(stock)
-                if stock in shorts and stock in value.index[:4]:
+            for self.stock in value.index[:4]:
+                print(self.stock)
+                if self.stock not in shorts and self.stock in value.index[:4]:
+                    self.place_sell_order(stock)
+                    shorts.append(self.stock)
+                if self.stock in shorts and self.stock in value.index[:4]:
                     pass
-                if stock in shorts and stock not in value.index[:4]:
+                if self.stock in shorts and self.stock not in value.index[:4]:
                     self.place_buy_order()
-                    shorts.remove(stock)
-            for stock in value.index[-5:]:
-                if stock not in longs and stock in value.index[-5:]:
+                    shorts.remove(self.stock)
+            for self.stock in value.index[-5:]:
+                if self.stock not in longs and self.stock in value.index[-5:]:
                     self.place_buy_order()
-                    longs.append(stock)
-                if stock in longs and stock in value.index[-5:]:
+                    longs.append(self.stock)
+                if self.stock in longs and self.stock in value.index[-5:]:
                     pass
-                if stock not in longs and stock not in value.index[-5:]:
+                if self.stock not in longs and self.stock not in value.index[-5:]:
                     self.place_sell_order
-                    shorts.remove(stock)
+                    shorts.remove(self.stock)
 
 
     def place_buy_order(self, units = 1):
-        price = self.prices.loc[row+1, stock] # aller récupérer le bon prix
+        price = self.prices.loc[self.row+1, self.stock] # aller récupérer le bon prix
         self.capital -= (units * price) * (1 + self.fee)
         self.trades += 1
 
 
-    def place_sell_order(self, bar, units = 1):
-        price = self.prices.loc[row+1, stock] # aller récupérer le bon prix
+    def place_sell_order(self, stock, units = 1):
+        price = self.prices.loc[self.row+1, self.stock] # aller récupérer le bon prix
         self.capital += (units * price) * (1 - self.fee)
         self.trades += 1
 
