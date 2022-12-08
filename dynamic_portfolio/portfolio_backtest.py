@@ -62,6 +62,7 @@ class Portfolio():
                     self.place_sell_open_short(stock = stock)
                 if stock in self.shorts.keys() and stock in self.value.index[:self.n_shorts]:
                     continue
+        self.final_close_out()
         print(self.shorts)
         print(self.longs)
 
@@ -124,6 +125,16 @@ class Portfolio():
 
         print(f'sell {units} {stock} at price={price}: capital={self.capital}, trades={self.trades}')
 
+    def final_close_out(self):
+        for stock in list(self.longs.keys()):
+            self.place_sell_close_long(stock=stock)
+            del self.longs[stock]
+
+        for stock in list(self.shorts):
+            self.place_buy_close_short(stock=stock)
+            del self.shorts[stock]
+
+
 if __name__== "__main__":
-    toto = Portfolio(100000, 0, 0, percentage=0.1)
-    toto.rotation_strategy(n_longs=5, n_shorts=5, y_pred=True)
+    toto = Portfolio(1000000, 0, 0, percentage=0.1)
+    toto.rotation_strategy(n_longs=10, n_shorts=5, y_pred=True)
