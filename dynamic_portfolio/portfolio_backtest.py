@@ -21,8 +21,8 @@ class Portfolio():
     def rotation_strategy(self, n_longs, n_shorts, y_pred=True):
         self.n_longs = n_longs
         self.n_shorts = n_shorts
-        self.shorts = []
-        self.longs = []
+        self.shorts = {}
+        self.longs = {}
         self.counter = 0
 
         if y_pred==True:
@@ -35,67 +35,95 @@ class Portfolio():
         for self.row in self.returns.index[:len(self.returns)-1]:
             self.counter += 1
             print(f'Day {self.counter}\n=================')
-            self.value = self.returns.loc[self.row].sort_values(ascending=True)
-            self.close_position()
-            print('Closed positions')
-            for stock in self.value.index[:self.n_shorts]:
-                if stock in self.shorts and stock not in self.value.index[:self.n_shorts]:
-                    self.place_buy_order(stock = stock)
-                if stock not in self.shorts and stock in self.value.index[:self.n_shorts]:
-                    self.place_sell_order(stock = stock)
-                if stock in self.shorts and stock in self.value.index[:self.n_shorts]:
-                    continue
-            for stock in self.value.index[-self.n_longs:]:
-                if stock in self.longs and stock not in self.value.index[-self.n_longs:]:
-                    self.place_sell_order(stock = stock)
-                if stock not in self.longs and stock in self.value.index[-self.n_longs:]:
-                    self.place_buy_order(stock = stock)
-                if stock in self.longs and stock in self.value.index[-self.n_longs:]:
-                    continue
-            print('Opened poistions')
 
-        # Close out all positions
-        for stock in self.longs:
-            self.place_sell_order(stock=stock)
-            self.longs.remove(stock)
-        for stock in self.shorts:
-            self.place_buy_order(stock=stock)
-            self.shorts.remove(stock)
-        print(self.longs, self.shorts)
+            print(self.shorts)
+            print(self.longs)
+
+            self.value = self.returns.loc[self.row].sort_values(ascending=True)
+            print('Closed positions')
+            self.close_position()
+
+            print(self.shorts)
+            print(self.longs)
+
+            self.top_5 = self.returns.loc[self.row].sort_values(ascending=False)
+            print('Opened positions')
+            for stock in self.top_5.index[:self.n_longs]:
+                # if stock in self.longs.keys() and stock not in self.top_5.index[:self.n_longs]:
+                #     self.place_sell_close_long(stock = stock)
+                if stock not in self.longs.keys() and stock in self.top_5.index[:self.n_longs]:
+                    self.place_buy_open_long(stock = stock)
+                if stock in self.longs.keys() and stock in self.top_5.index[:self.n_longs]:
+                    continue
+            for stock in self.value.index[:self.n_shorts]:
+                # if stock in self.shorts.keys() and stock not in self.value.index[:self.n_shorts]:
+                #     self.place_buy_close_short(stock = stock)
+                if stock not in self.shorts.keys() and stock in self.value.index[:self.n_shorts]:
+                    self.place_sell_open_short(stock = stock)
+                if stock in self.shorts.keys() and stock in self.value.index[:self.n_shorts]:
+                    continue
+        print(self.shorts)
+        print(self.longs)
 
 
     def close_position(self):
-        for stock in self.returns.columns:
-            if stock in self.shorts and stock in self.value.index[self.n_shorts:-self.n_longs+1]:
-                self.place_buy_order(stock=stock)
-                self.shorts.remove(stock)
-            if stock in self.longs and stock in self.value.index[self.n_shorts:-self.n_longs+1]:
-                self.place_sell_order(stock=stock)
-                self.longs.remove(stock)
+        temp_list_long = list(self.longs.keys())
+        for stock in temp_list_long:
+           if stock in self.value.index[self.n_shorts:-self.n_longs+1]:
+                self.place_sell_close_long(stock=stock)
+                del self.longs[stock]
+
+        temp_list_short = list(self.shorts.keys())
+        for stock in temp_list_short:
+            if stock in self.value.index[self.n_shorts:-self.n_longs+1]:
+                self.place_buy_close_short(stock=stock)
+                del self.shorts[stock]
 
 
-    def place_buy_order(self, stock):
+    def place_buy_open_long(self, stock):
+        # if stock in self.longs.keys():
+        #     price = self.prices.at[self.row+1, stock]
+        #     units = self.longs[stock]
+        #     self.capital -= (units * price) * (1 + self.fee)
+
         price = self.prices.at[self.row+1, stock]
         units = int((self.percentage*self.capital)/price)
         self.capital -= (units * price) * (1 + self.fee)
-
-        for i in range(units):
-            self.longs.append(stock)
+        self.longs[stock]=units
 
         self.trades += 1
         print(f'buy {units} {stock} at price={price} capital={self.capital}, trades={self.trades}')
 
-    def place_sell_order(self, stock, units = 1):
+
+    def place_buy_close_short(self, stock):
+        price = self.prices.at[self.row+1, stock]
+        units = self.shorts[stock]
+        self.capital -= (units * price) * (1 - self.fee)
+
+        self.trades += 1
+        print(f'buy {units} {stock} at price={price} capital={self.capital}, trades={self.trades}')
+
+    def place_sell_close_long(self, stock):
+        price = self.prices.at[self.row+1, stock]
+        units = self.longs[stock]
+        self.capital += (units * price) * (1 - self.fee)
+
+        self.trades += 1
+        print(f'sell {units} {stock} at price={price} capital={self.capital}, trades={self.trades}')
+
+    def place_sell_open_short(self, stock):
+        # if stock in self.shorts.keys():
+        #     price = self.prices.at[self.row+1, stock]
+        #     units = self.shorts[stock]
+        #     self.capital += (units * price) * (1 - self.fee)
         price = self.prices.at[self.row+1, stock]
         units = int((self.percentage*self.capital)/price)
         self.capital += (units * price) * (1 - self.fee)
-
-        for i in range(units):
-            self.shorts.append(stock)
-
+        self.shorts[stock]=units
         self.trades += 1
+
         print(f'sell {units} {stock} at price={price}: capital={self.capital}, trades={self.trades}')
 
 if __name__== "__main__":
-    toto = Portfolio(100000, 0, 0, percentage=0.05)
-    toto.rotation_strategy(n_longs=5, n_shorts=5, y_pred=False)
+    toto = Portfolio(100000, 0, 0, percentage=0.1)
+    toto.rotation_strategy(n_longs=5, n_shorts=5, y_pred=True)
