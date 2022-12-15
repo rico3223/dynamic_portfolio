@@ -11,7 +11,7 @@ class Portfolio():
         self.capital = capital
         self.tax_rate = tax_rate
         self.fee = fee
-        self.percentage = percentage
+        self.percentage = percentage  #percentage of capital to invest
         self.trades = 0
         self.daily_return = 0
         self.overall_return = 0
@@ -26,6 +26,7 @@ class Portfolio():
         self.longs = {}
         self.counter = 0
 
+        # Choosing which returns (actual or predicted) to test
         if y_pred==True:
             self.returns = pd.read_csv('../raw_data/backtest_data/gradientboosting_pred_454_stocks.csv', index_col=0)
             self.returns.reset_index(inplace=True, drop=True)
@@ -33,27 +34,37 @@ class Portfolio():
             self.returns = pd.read_csv('../raw_data/backtest_data/real_returns.csv', index_col=0)
             self.returns.reset_index(inplace=True, drop=True)
 
+        # Looping through all 470 days (test interval)
         for self.row in self.returns.index[:len(self.returns)-1]:
             self.counter += 1
             print(f'Day {self.counter}\n=================')
 
+            #Sorting our df by least to top performers per day
             self.value = self.returns.loc[self.row].sort_values(ascending=True)
             print('Closed positions\n --------------------')
-            self.close_position()
+            self.close_position()                           # Closing all positions from the day before (if condition applies)
             self.results.append(self.capital)
 
+            # Sorting our df by top to least perfomers per day
             self.top_5 = self.returns.loc[self.row].sort_values(ascending=False)
             print('Opened positions\n --------------------')
+
+            # Looping through top 5 best perfomers in orders to long
             for stock in self.top_5.index[:self.n_longs]:
-                if stock not in self.longs.keys() and stock in self.top_5.index[:self.n_longs]:
-                    self.place_buy_open_long(stock = stock)
-                if stock in self.longs.keys() and stock in self.top_5.index[:self.n_longs]:
-                    continue
+                if stock not in self.longs.keys() and stock in self.top_5.index[:self.n_longs]: # if stock not already in portfolio and stock in top 5 perfomers of the day
+                    self.place_buy_open_long(stock = stock)                                     # open long position
+
+                if stock in self.longs.keys() and stock in self.top_5.index[:self.n_longs]:     # if stock already in portfolio and stock in top 5 perfomers of the day
+                    continue                                                                    # leave in portfolio and do nothing
+
             for stock in self.value.index[:self.n_shorts]:
-                if stock not in self.shorts.keys() and stock in self.value.index[:self.n_shorts]:
-                    self.place_sell_open_short(stock = stock)
-                if stock in self.shorts.keys() and stock in self.value.index[:self.n_shorts]:
-                    continue
+                if stock not in self.shorts.keys() and stock in self.value.index[:self.n_shorts]:  # if stock not already in portfolio and stock in least 5 perfomers of the day
+                    self.place_sell_open_short(stock = stock)                                      # open short position
+
+                if stock in self.shorts.keys() and stock in self.value.index[:self.n_shorts]:      # if stock already in portfolio and stock in least 5 perfomers of the day
+                    continue                                                                       # leave in portfolio and do nothing
+
+        # Closing final day positions
         print('Final close out\n --------------------')
         self.final_close_out()
         self.results.append(self.capital)
@@ -62,13 +73,13 @@ class Portfolio():
 
 
     def close_position(self):
-        temp_list_long = list(self.longs.keys())
+        temp_list_long = list(self.longs.keys())   # If stock not in top X perfomers, sell to close position
         for stock in temp_list_long:
            if stock in self.value.index[self.n_shorts:-self.n_longs+1]:
                 self.place_sell_close_long(stock=stock)
                 del self.longs[stock]
 
-        temp_list_short = list(self.shorts.keys())
+        temp_list_short = list(self.shorts.keys())  # If stock not in least X perfomers, buy to close position
         for stock in temp_list_short:
             if stock in self.value.index[self.n_shorts:-self.n_longs+1]:
                 self.place_buy_close_short(stock=stock)

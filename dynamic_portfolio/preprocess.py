@@ -20,7 +20,7 @@ def scaler(df: pd.DataFrame):
     #Selecting relevant columns to scale (we dropped 'return' since its our target and we dropped 'date')
     columns_to_scale = model_df_scaled.drop(columns=['return']).columns
 
-    # Scaling our data based
+    # Scaling our data
     for column in columns_to_scale:
 
         if model_df_scaled[column][0]!= model_df_scaled[column][1]:
@@ -35,17 +35,15 @@ def scaler(df: pd.DataFrame):
     return model_df_scaled, backtest_df_scaled
 
 
+# Dividing our dataset in train(model_df) and test(backtest_df) dfs
 def backtest_split(df: pd.DataFrame, split_ratio:float = 0.8):
 
     model_df = df.iloc[:round(split_ratio*len(df)), :].copy()
-    #model_df.reset_index(drop=True, inplace=True)
-
     backtest_df = df.iloc[round(split_ratio*len(df))+1 : , :].copy()
-    #backtest_df.reset_index(drop=True, inplace=True)
-
     return model_df, backtest_df
 
 
+# Loading features, cleaning and scaling our train df
 def ready_to_train_df(ticker:str):
 
     loaded_features_df = features_creation(ticker=ticker)
@@ -54,6 +52,7 @@ def ready_to_train_df(ticker:str):
 
     return scaled_train_df
 
+# Loading features, cleaning and scaling our test df
 def ready_to_test_df(ticker:str):
     loaded_features_df = features_creation(ticker=ticker)
     cleaned_df = clean_data(loaded_features_df)
