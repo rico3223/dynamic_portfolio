@@ -8,7 +8,7 @@ from dynamic_portfolio.utils import load_csv, features_creation, clean_data
 
 
 
-def scaler(df: pd.DataFrame):
+def scaler(df: pd.DataFrame) -> pd.DataFrame:
 
     #Creating our model and backtest dataframes
     model_df, backtest_df = backtest_split(df)
@@ -36,7 +36,7 @@ def scaler(df: pd.DataFrame):
 
 
 # Dividing our dataset in train(model_df) and test(backtest_df) dfs
-def backtest_split(df: pd.DataFrame, split_ratio:float = 0.8):
+def backtest_split(df: pd.DataFrame, split_ratio:float = 0.8)-> pd.DataFrame:
 
     model_df = df.iloc[:round(split_ratio*len(df)), :].copy()
     backtest_df = df.iloc[round(split_ratio*len(df))+1 : , :].copy()
@@ -44,7 +44,7 @@ def backtest_split(df: pd.DataFrame, split_ratio:float = 0.8):
 
 
 # Loading features, cleaning and scaling our train df
-def ready_to_train_df(ticker:str):
+def ready_to_train_df(ticker:str) -> pd.DataFrame:
 
     loaded_features_df = features_creation(ticker=ticker)
     cleaned_df = clean_data(loaded_features_df)
@@ -53,7 +53,7 @@ def ready_to_train_df(ticker:str):
     return scaled_train_df
 
 # Loading features, cleaning and scaling our test df
-def ready_to_test_df(ticker:str):
+def ready_to_test_df(ticker:str)-> pd.DataFrame:
     loaded_features_df = features_creation(ticker=ticker)
     cleaned_df = clean_data(loaded_features_df)
     scaled_test_df = scaler(cleaned_df)[1]

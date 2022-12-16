@@ -7,7 +7,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 
-def load_csv(ticker: str):
+def load_csv(ticker: str)-> pd.DataFrame:
     """
     Creating a function that would allow us to load a csv containing all relevant features of a given ticker
     ticker should be in capital
@@ -120,7 +120,7 @@ def load_csv(ticker: str):
 def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool = True, momentum: bool = True, distance: bool = True, volume: bool = True, price_eps_ratio: bool = True,
                       momentum_eps_ratio: bool = True, gold_return: bool = True, oil_return: bool = True, usd_return: bool = True, cpi_return: bool = True, period:int = 250,
                       gdp_return: bool = True, ten_year_return: bool = True, two_year_return: bool = True, spread_return: bool = True, volume_momentum: bool = True,
-                      non_farm_payroll_return: bool = True, unemployement_return: bool = True, days:list = [5, 10, 20] ):
+                      non_farm_payroll_return: bool = True, unemployement_return: bool = True, days:list = [5, 10, 20] )-> pd.DataFrame:
     """
     Function that adds features to a dataframe
     days should be a list containing the number of days to consider for calculating the volatitliy, momentum, distance and and custom volume
@@ -201,7 +201,7 @@ def features_creation(ticker: str, high_low_ratio: bool = True, volatility: bool
     return final_df
 
 
-def clean_data(df: pd.DataFrame):
+def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     final_df = df.copy()
 
     final_df.dropna(inplace=True)
@@ -212,7 +212,7 @@ def clean_data(df: pd.DataFrame):
     return final_df
 
 
-def return_tickers():
+def return_tickers()-> list:
     """
     Function to return in list of all S&P500 tickers
     """

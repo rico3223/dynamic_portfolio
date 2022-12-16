@@ -80,8 +80,8 @@ def cross_validate_ml(df, model) :
                                                 input_length = cross_val['input_length'] ,
                                                 )
         # 3 - Scanninng fold_train and fold_test for SEQUENCES
-        X_train, y_train = fold_train, fold_train[['return']].shift(1).replace(np.nan,0)
-        X_test, y_test = fold_test, fold_test[['return']].shift(1).replace(np.nan,0)
+        X_train, y_train = fold_train, fold_train[['return']].shift(-1).replace(np.nan,0)
+        X_test, y_test = fold_test, fold_test[['return']].shift(-1).replace(np.nan,0)
 
         model.fit(X_train, y_train)
         rmse_model = (mean_squared_error(y_test, model.predict(X_test)))**0.5
